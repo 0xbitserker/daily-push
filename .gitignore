@@ -1,0 +1,6 @@
+data/
+backtest/results/
+__pycache__/
+*.pyc
+.env
+*.db
