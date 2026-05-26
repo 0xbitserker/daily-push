@@ -6,8 +6,7 @@ def score_signals(
     funding_anomalies: list[dict],
     price_anomalies:   list[dict],
     stablecoin:        dict,
-    dex_volumes:       list[dict],
-    kol_sentiment:     str = "neutral",  # "bullish" / "bearish" / "neutral"
+    kol_sentiment:     str = "neutral",
 ) -> dict:
     """
     综合各维度数据，输出 AI Signal 评分。
@@ -53,24 +52,7 @@ def score_signals(
             f"Stablecoin supply change ${change_7d/1e6:.0f}M (stable)"
         )
 
-    # ── 3. DEX Volume 信号 ───────────────────────────────────────────────────
-    if dex_volumes:
-        rising  = sum(1 for d in dex_volumes if d.get("ratio", 1) > 1.2)
-        falling = sum(1 for d in dex_volumes if d.get("ratio", 1) < 0.8)
-        total   = len(dex_volumes)
-
-        if rising > total * 0.6:
-            bullish_reasons.append(
-                f"DEX volumes rising across {rising}/{total} tracked perp protocols"
-            )
-        elif falling > total * 0.6:
-            bearish_reasons.append(
-                f"DEX volumes declining across {falling}/{total} tracked perp protocols"
-            )
-        else:
-            neutral_reasons.append("DEX volumes mixed across protocols")
-
-    # ── 4. Price Momentum 信号 ───────────────────────────────────────────────
+    # ── 3. Price Momentum 信号 ───────────────────────────────────────────────
     big_pumps  = [a for a in price_anomalies if a["change"] >= 15]
     big_dumps  = [a for a in price_anomalies if a["change"] <= -15]
 
@@ -85,7 +67,7 @@ def score_signals(
     else:
         neutral_reasons.append("Price momentum mixed — no broad directional bias")
 
-    # ── 5. KOL Sentiment 信号 ────────────────────────────────────────────────
+    # ── 4. KOL Sentiment 信号 ────────────────────────────────────────────────
     if kol_sentiment == "bullish":
         bullish_reasons.append("KOL sentiment majority bullish")
     elif kol_sentiment == "bearish":

@@ -1,4 +1,5 @@
-from engine.anomaly import detect_funding_anomalies, detect_price_anomalies, detect_dex_volume_anomalies
+from engine.anomaly import detect_funding_anomalies, detect_price_anomalies
 from engine.kol_summarizer import summarize_kol_tweets, assess_kol_sentiment, summarize_news_headlines
 from engine.signal import score_signals
+from engine.market_analyst import generate_market_insights, generate_trading_brief
 from engine.renderer import render_daily, split_messages

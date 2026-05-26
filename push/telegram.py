@@ -34,6 +34,8 @@ async def send_messages(messages: list[str]) -> bool:
                 "parse_mode": "HTML",
                 "disable_web_page_preview": True,
             }
+            if config.TG_TOPIC_ID:
+                payload["message_thread_id"] = config.TG_TOPIC_ID
             try:
                 resp = await client.post(url, json=payload)
                 if resp.status_code != 200:

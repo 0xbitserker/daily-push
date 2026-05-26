@@ -9,6 +9,7 @@ GEMINI_API_KEY      = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL        = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 TG_BOT_TOKEN        = os.getenv("TG_BOT_TOKEN", "")
 TG_CHANNEL_ID       = os.getenv("TG_CHANNEL_ID", "")
+TG_TOPIC_ID         = int(os.getenv("TG_TOPIC_ID", "0")) or None
 RSSHUB_BASE_URL     = os.getenv("RSSHUB_BASE_URL", "").rstrip("/")
 DEBUG_MODE          = os.getenv("DEBUG_MODE", "0") == "1"
 
@@ -64,25 +65,6 @@ KOL_LIST = [
     {"username": "CoinDesk",       "priority": 3, "type": "media"},
     {"username": "Cointelegraph",  "priority": 3, "type": "media"},
     {"username": "DecryptMedia",   "priority": 3, "type": "media"},
-]
-
-# ── 14 Competitor DEXs ────────────────────────────────────────────────────────
-# defillama_id: DeFiLlama /overview/perps 中的 slug
-DEX_LIST = [
-    {"name": "Hyperliquid", "twitter": "HyperliquidX",    "defillama_id": "hyperliquid"},
-    {"name": "Aster",       "twitter": "Aster_finance",   "defillama_id": "aster"},
-    {"name": "Lighter",     "twitter": "lighter_xyz",     "defillama_id": "lighter"},
-    {"name": "EdgeX",       "twitter": "EdgeX_Exchange",  "defillama_id": "edgex"},
-    {"name": "ApeX",        "twitter": "ApeX_Protocol",   "defillama_id": "apex"},
-    {"name": "GRVT",        "twitter": "GRVTofficial",    "defillama_id": "grvt"},
-    {"name": "Aevo",        "twitter": "aevo_xyz",        "defillama_id": "aevo"},
-    {"name": "dYdX",        "twitter": "dYdX",            "defillama_id": "dydx"},
-    {"name": "GMX",         "twitter": "GMX_IO",          "defillama_id": "gmx"},
-    {"name": "Drift",       "twitter": "DriftProtocol",   "defillama_id": "drift"},
-    {"name": "Variational", "twitter": "variational_io",  "defillama_id": "variational"},
-    {"name": "StandX",      "twitter": "StandX_io",       "defillama_id": "standx"},
-    {"name": "Liquid",      "twitter": "liquid_protocol", "defillama_id": "liquid"},
-    {"name": "Pacifica",    "twitter": "PacificaFi",      "defillama_id": "pacifica"},
 ]
 
 # ── News RSS feeds ────────────────────────────────────────────────────────────

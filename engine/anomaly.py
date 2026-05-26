@@ -28,9 +28,9 @@ def detect_funding_anomalies(funding_data: list[dict]) -> list[dict]:
 
         tags = []
         if fr > config.FUNDING_RATE_EXTREME_POS:
-            tags.append(f"Funding +{fr*100:.4f}% ⚠️ 多头拥挤")
+            tags.append(f"Funding +{fr*100:.4f}% ⚠️ Crowded longs")
         elif fr < config.FUNDING_RATE_EXTREME_NEG:
-            tags.append(f"Funding {fr*100:.4f}% ⚠️ 空头拥挤")
+            tags.append(f"Funding {fr*100:.4f}% ⚠️ Crowded shorts")
         elif abs(fr) > config.FUNDING_RATE_SPIKE_ABS:
             direction = "+" if fr > 0 else ""
             tags.append(f"Funding {direction}{fr*100:.4f}%")

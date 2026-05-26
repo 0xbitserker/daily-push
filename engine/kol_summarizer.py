@@ -1,4 +1,5 @@
 """Gemini LLM 摘要 — KOL 推文批量摘要 + AI Signal 语义评分"""
+import asyncio
 from google import genai
 import config
 
@@ -12,10 +13,34 @@ def _get_client() -> genai.Client:
     return _client
 
 
-def summarize_kol_tweets(tweets: list[dict], top_n: int = 7) -> list[dict]:
+async def _gemini_with_retry(prompt: str, max_retries: int = 3) -> str:
+    """带指数退避重试的 Gemini 调用。"""
+    client = _get_client()
+    for attempt in range(max_retries):
+        try:
+            await asyncio.sleep(2 * attempt)
+            resp = client.models.generate_content(
+                model=config.GEMINI_MODEL,
+                contents=prompt,
+            )
+            return resp.text.strip()
+        except Exception as e:
+            err_str = str(e)
+            if "429" in err_str or "Rate limit" in err_str or "Too Many Requests" in err_str:
+                if attempt < max_retries - 1:
+                    wait = 5 * (2 ** attempt)
+                    print(f"  [Gemini] 429 rate limit, waiting {wait}s (attempt {attempt+1}/{max_retries})...")
+                    await asyncio.sleep(wait)
+                    continue
+            if attempt == max_retries - 1:
+                raise
+    return ""
+
+
+async def summarize_kol_tweets(tweets: list[dict], top_n: int = 7) -> list[dict]:
     """
     对筛选后的 KOL 推文批量生成摘要。
-    tweets: [{username, text, priority, kol_type, ...}, ...]
+    tweets: [{username, text, priority, kol_type, ...}]
     返回: [{username, summary}, ...]  (top_n 条)
     """
     if not tweets:
@@ -41,12 +66,7 @@ Tweets:
 {chr(10).join(tweet_lines)}"""
 
     try:
-        client = _get_client()
-        resp = client.models.generate_content(
-            model=config.GEMINI_MODEL,
-            contents=prompt,
-        )
-        text = resp.text.strip()
+        text = await _gemini_with_retry(prompt)
     except Exception as e:
         # LLM 失败时回退到简单截断
         return [
@@ -67,7 +87,7 @@ Tweets:
     return results[:top_n]
 
 
-def assess_kol_sentiment(summaries: list[dict]) -> str:
+async def assess_kol_sentiment(summaries: list[dict]) -> str:
     """
     对 KOL 摘要整体做情绪判断: "bullish" / "bearish" / "neutral"
     """
@@ -85,12 +105,8 @@ Summaries: {combined}
 Reply with exactly ONE word: bullish, bearish, or neutral."""
 
     try:
-        client = _get_client()
-        resp = client.models.generate_content(
-            model=config.GEMINI_MODEL,
-            contents=prompt,
-        )
-        word = resp.text.strip().lower().split()[0]
+        text = await _gemini_with_retry(prompt)
+        word = text.strip().lower().split()[0]
         if word in ("bullish", "bearish", "neutral"):
             return word
     except Exception:
@@ -98,7 +114,7 @@ Reply with exactly ONE word: bullish, bearish, or neutral."""
     return "neutral"
 
 
-def summarize_news_headlines(news_items: list[dict]) -> list[str]:
+async def summarize_news_headlines(news_items: list[dict]) -> list[str]:
     """
     对筛选后的新闻列表，生成简洁的一句话摘要列表。
     """
@@ -115,13 +131,9 @@ Headlines:
 {chr(10).join(lines)}"""
 
     try:
-        client = _get_client()
-        resp = client.models.generate_content(
-            model=config.GEMINI_MODEL,
-            contents=prompt,
-        )
+        text = await _gemini_with_retry(prompt)
         summaries = []
-        for line in resp.text.strip().split("\n"):
+        for line in text.strip().split("\n"):
             line = line.strip()
             if line.startswith("•"):
                 summaries.append(line[1:].strip())
