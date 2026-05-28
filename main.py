@@ -81,13 +81,13 @@ async def run_daily(session: str = "morning"):
     # top_movers fallback
     if not top_movers:
         print("  [WARN] top_movers unavailable, deriving from CoinGecko...")
-        sorted_co_ins = sorted(top_coins[:50], key=lambda c: abs(c.get("price_change_percentage_24h", 0)), reverse=True)
+        sorted_co_ins = sorted(top_coins[:50], key=lambda c: abs(c.get("price_change_percentage_24h") or 0), reverse=True)
         top_movers = []
         for c in sorted_co_ins[:15]:
             top_movers.append({
                 "symbol": (c.get("symbol") or "").upper() + "USDT",
-                "priceChangePercent": c.get("price_change_percentage_24h", 0),
-                "lastPrice": c.get("current_price", 0),
+                "priceChangePercent": c.get("price_change_percentage_24h") or 0,
+                "lastPrice": c.get("current_price") or 0,
             })
 
     # ── 构建市场概况 ──────────────────────────────────────────────────
@@ -96,14 +96,14 @@ async def run_daily(session: str = "morning"):
         sym = (coin.get("symbol") or "").upper()
         if sym == "BTC":
             market_overview["btc_price"] = coin.get("current_price", 0)
-            market_overview["btc_change_24h"] = coin.get("price_change_percentage_24h", 0)
+            market_overview["btc_change_24h"] = coin.get("price_change_percentage_24h") or 0
             market_overview["btc_dom"] = (
                 coin.get("market_cap_percentage", {}).get("btc", 0)
                 if isinstance(coin.get("market_cap_percentage"), dict) else 0
             )
         elif sym == "ETH":
             market_overview["eth_price"] = coin.get("current_price", 0)
-            market_overview["eth_change_24h"] = coin.get("price_change_percentage_24h", 0)
+            market_overview["eth_change_24h"] = coin.get("price_change_percentage_24h") or 0
 
     total_mcap = sum(((c.get("market_cap", 0) or 0) for c in top_coins[:50]))
     market_overview["total_mcap"] = total_mcap
